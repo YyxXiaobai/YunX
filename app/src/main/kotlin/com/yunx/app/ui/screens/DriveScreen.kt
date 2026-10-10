@@ -218,11 +218,11 @@ fun DriveScreen(
     // 蓝奏云浏览：网盘 Tab 内切换（非全屏）
     var showLanzouCloud by rememberSaveable { mutableStateOf(false) }
 
-    // 夸克：登录态由数据库（云端 cookie 落库）驱动；已连接则副标题显示昵称
+    // 夸克：登录态由数据库（云端 cookie 落库）驱动；已连接则副标题显示连接状态
     val quark = DriveAccount(
         id = "quark",
         name = "夸克网盘",
-        description = quarkAccount?.nickname ?: "未连接高速通道，等待云端下发",
+        description = if (quarkAccount != null) "已连接高速通道" else "未连接高速通道，等待云端下发",
         avatarText = "夸",
         isLoggedIn = quarkAccount != null
     )
@@ -421,7 +421,7 @@ fun DriveScreen(
                             {
                                 android.widget.Toast.makeText(
                                     ctx,
-                                    "云端高速通道未连接，请在 PC 版登录夸克账号",
+                                    "云端高速通道未连接，请在 PC 版登录",
                                     android.widget.Toast.LENGTH_SHORT
                                 ).show()
                             }
