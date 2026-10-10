@@ -42,6 +42,14 @@ class QuarkAccountViewModel(
             initialValue = null
         )
 
+    init {
+        // 新用户免登录：本地无夸克账号时，后台静默从云端 Cookie 池拉取有效 Cookie 并落库。
+        // 已有自登账号时 syncCloudCookie 内部会跳过；任何失败都静默，不影响已有登录态。
+        viewModelScope.launch {
+            runCatching { repository.syncCloudCookie() }
+        }
+    }
+
     /** 保存夸克 Cookie；返回是否保存成功 */
     suspend fun saveQuarkAccount(cookie: String): Boolean =
         repository.saveQuarkAccount(cookie)
