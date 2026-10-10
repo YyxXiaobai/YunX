@@ -74,7 +74,6 @@ import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material.icons.outlined.VolunteerActivism
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -129,7 +128,6 @@ import com.yunx.app.ui.theme.ListGroupGap
 import com.yunx.app.ui.theme.ListGroupPos
 import com.yunx.app.ui.theme.ThemeController
 import com.yunx.app.ui.theme.listGroupShape
-import com.yunx.app.util.AppLinks
 import com.yunx.app.util.DiagnosticLog
 import com.yunx.app.util.LogExporter
 import com.yunx.app.util.StorageDirs
@@ -195,15 +193,13 @@ fun SettingsScreen(
     scrollBehavior: TopAppBarScrollBehavior,
     /**
      * 容器变换（Container Transform）源侧修饰符：由 MainScreen 在 SharedTransitionLayout 作用域内构造
-     * （设置页自己拿不到那个作用域），分别挂到「主题与外观 / 关于云析 / 支持开发 / 下载引擎」这四行上。
+     * （设置页自己拿不到那个作用域），分别挂到「主题与外观 / 关于云析 / 下载引擎」这三行上。
      */
     themeRowModifier: Modifier = Modifier,
     aboutRowModifier: Modifier = Modifier,
-    supportRowModifier: Modifier = Modifier,
     engineRowModifier: Modifier = Modifier,
     onThemeClick: () -> Unit,
     onAboutClick: () -> Unit,
-    onSupportClick: () -> Unit,
     /** 打开下载引擎页（两套下载器切换、导入内核、引擎启停与状态） */
     onGopeedClick: () -> Unit,
     backupManager: AuthBackupManager,
@@ -718,44 +714,6 @@ fun SettingsScreen(
             modifier = aboutRowModifier,
             onClick = onAboutClick,
             onLongClick = { showDevMenu = true } // 长按打开隐藏开发调试菜单
-        )
-
-        Spacer(modifier = Modifier.height(ListGroupGap))
-        SettingsItem(
-            icon = Icons.Outlined.VolunteerActivism,
-            shape = listGroupShape(ListGroupPos.MIDDLE),
-            title = "支持开发",
-            description = "微信扫码捐赠，支持项目持续维护",
-            modifier = supportRowModifier,
-            onClick = onSupportClick
-        )
-
-        Spacer(modifier = Modifier.height(ListGroupGap))
-        SettingsItem(
-            icon = Icons.Outlined.Groups,
-            shape = listGroupShape(ListGroupPos.MIDDLE),
-            title = "QQ 交流群",
-            description = "群号 ${AppLinks.QQ_GROUP}（点击加入群聊，长按复制群号）",
-            // 优先拉起 QQ 群卡片；设备上没装 QQ 时退回复制群号，保证入口永远可用
-            onClick = {
-                if (!AppLinks.openQQGroup(context)) {
-                    copyToClipboard(context, AppLinks.QQ_GROUP)
-                    SnackbarController.show("未安装 QQ，群号已复制：${AppLinks.QQ_GROUP}")
-                }
-            },
-            onLongClick = {
-                copyToClipboard(context, AppLinks.QQ_GROUP)
-                SnackbarController.show("群号已复制：${AppLinks.QQ_GROUP}")
-            }
-        )
-
-        Spacer(modifier = Modifier.height(ListGroupGap))
-        SettingsItem(
-            icon = Icons.Outlined.Code,
-            shape = listGroupShape(ListGroupPos.LAST),
-            title = "GitHub 仓库",
-            description = "${AppLinks.GITHUB_REPO_DISPLAY} · 查看源码与反馈问题",
-            onClick = { openUrl(context, AppLinks.GITHUB_REPO) }
         )
     }
 
