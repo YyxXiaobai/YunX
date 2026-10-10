@@ -89,16 +89,15 @@ object KernelProvisioner {
     private const val TASK_ID = -20261004L
 
     /**
-     * 网盘通道的分片数：**固定 64**（用户口径，不看设置页那个夸克档）。
+     * 网盘通道的分片数：**固定 512**（用户口径，不看设置页那个夸克档）。
      *
-     * 夸克 CDN 是**按连接限速**的，连接数越多越接近满速；内核包只有 24.8–26.3 MB，
-     * 64 片每片约 390 KB 仍然远大于一个 TCP 窗口，不会因为切太碎而掉速。
-     * （这也是 [MIN_CHUNK_BYTES] 定在 256KB 的原因：按 1MB 收敛的话 25MB 最多只能切出 25 片，到不了 64。）
+     * 夸克 CDN 是**按连接限速**的，连接数越多越接近满速（实测 128 段即可跑满宽带，
+     * 512 段留足余量）；每片按 [MIN_CHUNK_BYTES] 256KB 收敛，小文件自然切不满 512 片。
      */
-    private const val PAN_CHUNKS = 64
+    private const val PAN_CHUNKS = 512
 
     /** 分片数上限：兜住设置里更大的值（GitHub 通道按设置走，最高也就是这个数） */
-    private const val MAX_CHUNKS = 64
+    private const val MAX_CHUNKS = 512
 
     /** 单块下限：分片数按「总大小 / 这个值」收敛，避免小文件被切成一堆碎块 */
     private const val MIN_CHUNK_BYTES = 256L * 1024
