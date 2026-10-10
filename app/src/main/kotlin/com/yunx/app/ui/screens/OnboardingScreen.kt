@@ -98,17 +98,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import android.Manifest
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.widget.Toast
 import com.yunx.app.R
 import com.yunx.app.ui.theme.effectsDefault
 import com.yunx.app.ui.theme.effectsFast
 import com.yunx.app.ui.theme.spatialDefault
-import com.yunx.app.util.AppLinks
 import com.yunx.app.util.PermissionState
 import kotlinx.coroutines.launch
 import kotlin.math.PI
@@ -354,16 +348,12 @@ private fun WelcomePage(context: Context) {
 
         Spacer(modifier = Modifier.height(26.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FactChip("10 大网盘")
+            FactChip("夸克网盘")
             FactChip("分片下载")
             FactChip("完全免费")
         }
 
         Spacer(modifier = Modifier.height(30.dp))
-        GitHubCard(context)
-
-        Spacer(modifier = Modifier.height(12.dp))
-        QQGroupPill(context)
     }
 }
 
@@ -381,117 +371,6 @@ private fun FactChip(text: String) {
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp)
         )
     }
-}
-
-/** 开源仓库入口卡片 */
-@Composable
-private fun GitHubCard(context: Context) {
-    Card(
-        onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(AppLinks.GITHUB_REPO))
-            context.startActivity(intent)
-        },
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        )
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                modifier = Modifier.size(40.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Outlined.Code,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(14.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "开源仓库",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = AppLinks.GITHUB_REPO_DISPLAY,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Icon(
-                imageVector = Icons.Outlined.OpenInNew,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.outline
-            )
-        }
-    }
-}
-
-/**
- * QQ 交流群入口（胶囊）：点击拉起 QQ 群卡片，没装 QQ 时退回复制群号。
- *
- * ★ 反馈用系统 Toast：引导页是 MainScreen 里 early-return 的全屏页，不在 Scaffold 里，
- *   拿不到 Snackbar 宿主（SnackbarController 的气泡挂在 MainScreen 的 Scaffold 上）；
- *   Android 13+ 复制剪贴板时系统自己也会弹提示。
- * ★ 做成胶囊而不是卡片：首页已经有一张 GitHub 卡片，小屏（≈640dp 高）再加一张卡片会挤掉图标区。
- */
-@Composable
-private fun QQGroupPill(context: Context) {
-    Card(
-        onClick = {
-            // 优先拉起 QQ 群卡片（openQQGroup 内部靠 ActivityNotFoundException 判断有没有 QQ），失败才复制群号
-            if (!AppLinks.openQQGroup(context)) {
-                copyToClipboard(context, AppLinks.QQ_GROUP)
-                Toast.makeText(context, "未安装 QQ，群号已复制：${AppLinks.QQ_GROUP}", Toast.LENGTH_SHORT).show()
-            }
-        },
-        shape = CircleShape,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Groups,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "QQ 群 ${AppLinks.QQ_GROUP}",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Icon(
-                imageVector = Icons.Outlined.OpenInNew,
-                contentDescription = "打开 QQ",
-                modifier = Modifier.size(14.dp),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        }
-    }
-}
-
-/** 复制文本到剪贴板（写剪贴板不受「自动识别剪贴板」开关约束，见 Agent.md §3.22） */
-private fun copyToClipboard(context: Context, text: String) {
-    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    cm.setPrimaryClip(ClipData.newPlainText("yunx_qq_group", text))
 }
 
 // ==================== 第 2 页：协议与声明 ====================
@@ -545,7 +424,7 @@ private fun TermsPage() {
             icon = Icons.Outlined.Code,
             title = "开源协议",
             paragraphs = listOf(
-                "本项目基于 GNU AGPL-3.0 协议开源，源码公开于 ${AppLinks.GITHUB_REPO_DISPLAY}。"
+                "本项目基于 GNU AGPL-3.0 协议开源。"
             )
         )
 
