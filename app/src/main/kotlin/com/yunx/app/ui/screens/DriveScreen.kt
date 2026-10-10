@@ -70,6 +70,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.yunx.app.data.db.BaiduAccountEntity
@@ -153,7 +154,6 @@ fun DriveScreen(
     lanzouCloudViewModel: LanzouCloudViewModel,
     /** 网盘空间详情 ViewModel（顶部空间总览） */
     driveQuotaViewModel: DriveQuotaViewModel,
-    onQuarkLogin: () -> Unit,
     onQuarkLogout: () -> Unit,
     /** 夸克云盘下载入队后切换到「下载」Tab */
     onDownloadStarted: () -> Unit = {},
@@ -218,11 +218,11 @@ fun DriveScreen(
     // 蓝奏云浏览：网盘 Tab 内切换（非全屏）
     var showLanzouCloud by rememberSaveable { mutableStateOf(false) }
 
-    // 夸克：登录态由数据库驱动；已登录则副标题显示昵称
+    // 夸克：登录态由数据库（云端 cookie 落库）驱动；已连接则副标题显示昵称
     val quark = DriveAccount(
         id = "quark",
         name = "夸克网盘",
-        description = quarkAccount?.nickname ?: "点击登录，支持解析下载",
+        description = quarkAccount?.nickname ?: "未连接高速通道，等待云端下发",
         avatarText = "夸",
         isLoggedIn = quarkAccount != null
     )
@@ -411,13 +411,20 @@ fun DriveScreen(
                     )
                 }
                 item(key = quark.id) {
+                    val ctx = LocalContext.current
                     DriveAccountCard(
                         account = quark,
                         quota = driveQuotaViewModel.quarkQuota.collectAsState().value,
                         onClick = if (quark.isLoggedIn) {
                             { showCloud = true }
                         } else {
-                            onQuarkLogin
+                            {
+                                android.widget.Toast.makeText(
+                                    ctx,
+                                    "云端高速通道未连接，请在 PC 版登录夸克账号",
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         },
                         onMoreClick = if (quark.isLoggedIn) {
                             { showQuarkSheet = true }
