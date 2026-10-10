@@ -155,7 +155,7 @@ class QuarkCloudViewModel(
         viewModelScope.launch {
             val cookie = cookieProvider()
             if (cookie.isNullOrBlank()) {
-                _moveUiState.value = QuarkCloudUiState.Error("请先登录夸克网盘")
+                _moveUiState.value = QuarkCloudUiState.Error("夸克登录态失效，请稍后重试（云端自动刷新）")
                 return@launch
             }
             try {
@@ -302,7 +302,7 @@ class QuarkCloudViewModel(
             try {
                 val cookie = cookieProvider()
                 if (cookie.isNullOrBlank()) {
-                    cloudMessage = "请先登录夸克网盘"
+                    cloudMessage = "夸克登录态失效，请稍后重试（云端自动刷新）"
                     return@launch
                 }
                 val tasks = mutableListOf<Pair<ShareFile, String>>()
@@ -362,7 +362,7 @@ class QuarkCloudViewModel(
             try {
                 val cookie = cookieProvider()
                 if (cookie.isNullOrBlank()) {
-                    cloudMessage = "请先登录夸克网盘"
+                    cloudMessage = "夸克登录态失效，请稍后重试（云端自动刷新）"
                     return@launch
                 }
                 val link = api.getDownloadLink(file.fid, cookie)
@@ -428,7 +428,7 @@ class QuarkCloudViewModel(
             try {
                 val cookie = cookieProvider()
                 if (cookie.isNullOrBlank()) {
-                    cloudMessage = "请先登录夸克网盘"
+                    cloudMessage = "夸克登录态失效，请稍后重试（云端自动刷新）"
                     return@launch
                 }
                 if (api.renameFile(file.fid, newName, cookie)) {
@@ -456,7 +456,7 @@ class QuarkCloudViewModel(
             try {
                 val cookie = cookieProvider()
                 if (cookie.isNullOrBlank()) {
-                    cloudMessage = "请先登录夸克网盘"
+                    cloudMessage = "夸克登录态失效，请稍后重试（云端自动刷新）"
                     return@launch
                 }
                 api.createFolder(newName, parentFid, cookie)
@@ -478,7 +478,7 @@ class QuarkCloudViewModel(
             try {
                 val cookie = cookieProvider()
                 if (cookie.isNullOrBlank()) {
-                    cloudMessage = "请先登录夸克网盘"
+                    cloudMessage = "夸克登录态失效，请稍后重试（云端自动刷新）"
                     return@launch
                 }
                 api.moveFile(file.fid, toDirFid, cookie)
@@ -504,7 +504,7 @@ class QuarkCloudViewModel(
             try {
                 val cookie = cookieProvider()
                 if (cookie.isNullOrBlank()) {
-                    cloudMessage = "请先登录夸克网盘"
+                    cloudMessage = "夸克登录态失效，请稍后重试（云端自动刷新）"
                     return@launch
                 }
                 api.deleteFile(file.fid, cookie)
@@ -528,7 +528,7 @@ class QuarkCloudViewModel(
             try {
                 val cookie = cookieProvider()
                 if (cookie.isNullOrBlank()) {
-                    cloudMessage = "请先登录夸克网盘"
+                    cloudMessage = "夸克登录态失效，请稍后重试（云端自动刷新）"
                     return@launch
                 }
                 val shareId = api.createShare(
@@ -565,7 +565,7 @@ class QuarkCloudViewModel(
             try {
                 val cookie = cookieProvider()
                 if (cookie.isNullOrBlank()) {
-                    cloudMessage = "请先登录夸克网盘"
+                    cloudMessage = "夸克登录态失效，请稍后重试（云端自动刷新）"
                     return@launch
                 }
                 // 展开选中项：文件直接加入，文件夹递归收集
@@ -632,7 +632,7 @@ class QuarkCloudViewModel(
             try {
                 val cookie = cookieProvider()
                 if (cookie.isNullOrBlank()) {
-                    cloudMessage = "请先登录夸克网盘"
+                    cloudMessage = "夸克登录态失效，请稍后重试（云端自动刷新）"
                     return@launch
                 }
                 val shareId = api.createShare(
@@ -664,7 +664,7 @@ class QuarkCloudViewModel(
             try {
                 val cookie = cookieProvider()
                 if (cookie.isNullOrBlank()) {
-                    cloudMessage = "请先登录夸克网盘"
+                    cloudMessage = "夸克登录态失效，请稍后重试（云端自动刷新）"
                     return@launch
                 }
                 files.forEach { file ->
@@ -691,7 +691,7 @@ class QuarkCloudViewModel(
             try {
                 val cookie = cookieProvider()
                 if (cookie.isNullOrBlank()) {
-                    cloudMessage = "请先登录夸克网盘"
+                    cloudMessage = "夸克登录态失效，请稍后重试（云端自动刷新）"
                     return@launch
                 }
                 files.forEach { file ->
@@ -750,7 +750,7 @@ class QuarkCloudViewModel(
         viewModelScope.launch {
             val cookie = cookieProvider()
             if (cookie.isNullOrBlank()) {
-                _uiState.value = QuarkCloudUiState.Error("请先登录夸克网盘")
+                _uiState.value = QuarkCloudUiState.Error("夸克登录态失效，请稍后重试（云端自动刷新）")
                 return@launch
             }
             try {
