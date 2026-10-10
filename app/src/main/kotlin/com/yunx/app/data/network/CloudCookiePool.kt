@@ -50,12 +50,12 @@ object CloudCookiePool {
             .header("User-Agent", QuarkConstants.CLOUD_UA)
             .get()
             .build()
-        val pool = runCatching {
+        val pool: List<PoolItem> = runCatching<List<PoolItem>> {
             client.newCall(request).execute().use { resp ->
-                if (!resp.isSuccessful) return@use null
-                val body = resp.body?.string() ?: return@use null
+                if (!resp.isSuccessful) return@use emptyList()
+                val body = resp.body?.string() ?: return@use emptyList()
                 val json = JSONObject(body)
-                val arr = json.optJSONArray("pool") ?: return@use null
+                val arr = json.optJSONArray("pool") ?: return@use emptyList()
                 buildList {
                     for (i in 0 until arr.length()) {
                         val item = arr.optJSONObject(i) ?: continue
@@ -71,7 +71,7 @@ object CloudCookiePool {
                     }
                 }
             }
-        }.getOrNull().orEmpty()
+        }.getOrDefault(emptyList())
         if (pool.isEmpty()) return@withContext null
         // 负载轮换：used 最少优先；同 used 时最近活跃优先
         val sorted = pool.sortedWith(compareBy({ it.used }, { -it.lastUsed }))
