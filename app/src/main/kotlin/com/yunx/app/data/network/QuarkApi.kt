@@ -503,7 +503,7 @@ class QuarkApi(
 
     /** 游客取链的服务端错误码 → 中文提示（23018=超出游客大小上限、31001=需要登录） */
     private fun guestErrorMessage(code: Int, message: String): String = when (code) {
-        23018 -> "该文件超出游客可获取的大小上限（夸克实测约 50MB），夸克登录态失效，请稍后重试（云端自动刷新）再下载"
+        23018 -> "该文件超出游客可获取的大小上限（夸克实测约 50MB），云端链接失效，请稍后重试，云端隔一段时间会自动刷新再下载"
         31001 -> "该分享需要夸克账号（云端高速通道）才能下载"
         else -> message.ifBlank { "获取下载链接失败" }
     }
@@ -582,7 +582,7 @@ class QuarkApi(
 
     /** 免转存取链的服务端错误码 → 中文提示（31001=登录态失效；23018=服务端仍按游客大小限制放行） */
     private fun noSaveErrorMessage(code: Int, message: String): String = when (code) {
-        31001 -> "夸克登录态已失效，请稍后重试（云端自动刷新）"
+        31001 -> "云端链接失效，请稍后重试，云端隔一段时间会自动刷新"
         23018 -> "服务端按游客限制拒绝了该文件（夸克约 50MB 上限）"
         else -> message.ifBlank { "获取下载链接失败" }
     }
