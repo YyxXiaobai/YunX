@@ -151,15 +151,6 @@ private data class ThreadPlatform(val platform: String, val label: String)
 
 private val threadPlatforms = listOf(
     ThreadPlatform(DownloadPlatform.QUARK, "夸克网盘"),
-    ThreadPlatform(DownloadPlatform.UC, "UC 网盘"),
-    ThreadPlatform(DownloadPlatform.XUNLEI, "迅雷网盘"),
-    ThreadPlatform(DownloadPlatform.BAIDU, "百度网盘"),
-    ThreadPlatform(DownloadPlatform.C139, "139 网盘"),
-    ThreadPlatform(DownloadPlatform.PAN123, "123 云盘"),
-    ThreadPlatform(DownloadPlatform.PAN115, "115 网盘"),
-    ThreadPlatform(DownloadPlatform.GUANGYA, "光鸭云盘"),
-    ThreadPlatform(DownloadPlatform.ILANZOU, "蓝奏云优享版"),
-    ThreadPlatform(DownloadPlatform.LANZOU, "蓝奏云"),
 )
 
 /** 跳转系统「应用通知」设置页（Android 8+ 通用入口；失败时退回应用详情页） */
@@ -407,7 +398,7 @@ fun SettingsScreen(
             icon = Icons.Outlined.Tune,
             shape = listGroupShape(ListGroupPos.MIDDLE),
             title = "下载线程数",
-            description = "按网盘分别设置分片并发数（默认 32，最高 512）",
+            description = "按网盘分别设置分片并发数（默认 512，最高 512）",
             onClick = { showThreadsDialog = true }
         )
 
