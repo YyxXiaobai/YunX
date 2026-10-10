@@ -43,7 +43,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Bookmarks
-import androidx.compose.material.icons.outlined.Campaign
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -94,7 +93,6 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import com.yunx.app.data.announcement.AnnouncementReadStore
 import com.yunx.app.data.db.AppDatabase
 import com.yunx.app.data.download.ChunkDownloader
 import com.yunx.app.data.download.DownloadManager
@@ -150,9 +148,6 @@ import com.yunx.app.ui.login.XunleiVerifyWebViewScreen
 import com.yunx.app.ui.login.XunleiWebLoginScreen
 import com.yunx.app.ui.navigation.MainTab
 import com.yunx.app.ui.screens.AboutScreen
-import com.yunx.app.ui.screens.AnnouncementPopupDialog
-import com.yunx.app.ui.screens.AnnouncementScreen
-import com.yunx.app.ui.screens.AnnouncementUnreadBadge
 import com.yunx.app.ui.screens.BookmarkScreen
 import com.yunx.app.ui.screens.DownloadScreen
 import com.yunx.app.ui.screens.DriveScreen
@@ -160,10 +155,8 @@ import com.yunx.app.ui.screens.DownloadEngineScreen
 import com.yunx.app.ui.screens.OnboardingScreen
 import com.yunx.app.ui.screens.ResolveScreen
 import com.yunx.app.ui.screens.SettingsScreen
-import com.yunx.app.ui.screens.SupportScreen
 import com.yunx.app.ui.screens.ThemeScreen
 import com.yunx.app.ui.screens.UpdateSheet
-import com.yunx.app.ui.viewmodel.AnnouncementViewModel
 import com.yunx.app.ui.viewmodel.BaiduAccountViewModel
 import com.yunx.app.ui.viewmodel.BaiduCloudViewModel
 import com.yunx.app.ui.viewmodel.BookmarkViewModel
@@ -203,7 +196,6 @@ import com.yunx.app.ui.theme.effectsFast
  * 两处都在本文件里构造（源侧修饰符见 MainScreen 里 themeRowModifier 等，目标侧见 OverlayPage 的调用处）。
  */
 internal const val OVERLAY_KEY_ABOUT = "overlay-about"
-internal const val OVERLAY_KEY_SUPPORT = "overlay-support"
 internal const val OVERLAY_KEY_THEME = "overlay-theme"
 
 /** 收藏页从顶栏图标进入，没有"被点的那一项"，不做共享元素形变（普通淡入即可） */
@@ -211,9 +203,6 @@ internal const val OVERLAY_KEY_BOOKMARKS = "overlay-bookmarks"
 
 /** Gopeed 引擎页从设置页那一行进入，同样没有共享元素形变（普通淡入即可） */
 internal const val OVERLAY_KEY_GOPEED = "overlay-gopeed"
-
-/** 公告页：源是顶栏那个公告图标（与收藏页同一手法 —— 图标本身当"源"，长成整页） */
-internal const val OVERLAY_KEY_ANNOUNCEMENTS = "overlay-announcements"
 
 /**
  * 主页框架：
@@ -258,13 +247,9 @@ fun MainScreen(
     var showILanzouLogin by rememberSaveable { mutableStateOf(false) }
     var showLanzouLogin by rememberSaveable { mutableStateOf(false) }
     var showAbout by rememberSaveable { mutableStateOf(false) }
-    var showSupport by rememberSaveable { mutableStateOf(false) }
     var showTheme by rememberSaveable { mutableStateOf(false) }
     var showBookmarks by rememberSaveable { mutableStateOf(false) }
     var showGopeed by rememberSaveable { mutableStateOf(false) }
-    var showAnnouncements by rememberSaveable { mutableStateOf(false) }
-    /** 启动公告弹窗点「查看详情」时带进去的公告 id（null = 从图标进来先看列表） */
-    var announcementDetailId by rememberSaveable { mutableStateOf<String?>(null) }
     val saveableStateHolder = rememberSaveableStateHolder()
 
     val context = LocalContext.current
@@ -334,21 +319,6 @@ fun MainScreen(
             SnackbarController.show("暂未获取到 Release 数据，请先联网检查一次更新")
         }
     }
-    /**
-     * 应用内公告：顶栏红点角标 + 启动弹窗。
-     *
-     * 启动检查（[AnnouncementViewModel.checkStartup]）整个会话只跑一次：一次列表请求同时决定
-     * 「角标数字」与「弹窗展示哪一条」—— 有未读的置顶公告就弹它，否则弹最新的一条未读，全读完则不弹。
-     * 失败静默（与上面的更新检查同一口径），用户点进公告页时会再拉一次并把错误显示出来。
-     */
-    val announcementReadStore = remember { AnnouncementReadStore(context) }
-    val announcementViewModel: AnnouncementViewModel = viewModel(
-        factory = AnnouncementViewModel.Factory(announcementReadStore)
-    )
-    val unreadAnnouncementCount by announcementViewModel.unreadCount.collectAsState()
-    val popupAnnouncement by announcementViewModel.popup.collectAsState()
-    LaunchedEffect(Unit) { announcementViewModel.checkStartup() }
-
 
     val api = remember { QuarkApi() }
     val ucApi = remember { UCApi() }
@@ -915,11 +885,9 @@ fun MainScreen(
     // 当前叠加页路由（null = 主界面）：容器变换用它当"源/目标"的共享 key
     val overlayRoute = when {
         showAbout -> OVERLAY_KEY_ABOUT
-        showSupport -> OVERLAY_KEY_SUPPORT
         showTheme -> OVERLAY_KEY_THEME
         showBookmarks -> OVERLAY_KEY_BOOKMARKS
         showGopeed -> OVERLAY_KEY_GOPEED
-        showAnnouncements -> OVERLAY_KEY_ANNOUNCEMENTS
         else -> null
     }
     // 正在展示的叠加页路由：打开时更新，关闭时**保留**（退出动画要用它渲染那个页面）
@@ -974,10 +942,6 @@ fun MainScreen(
                     rememberSharedContentState(OVERLAY_KEY_ABOUT),
                     animatedVisibilityScope = sourceScope
                 )
-                val supportRowModifier = Modifier.sharedBounds(
-                    rememberSharedContentState(OVERLAY_KEY_SUPPORT),
-                    animatedVisibilityScope = sourceScope
-                )
                 // 「下载引擎」行 → 下载引擎页：和上面三行同样走容器变换（整行长成整页）
                 val engineRowModifier = Modifier.sharedBounds(
                     rememberSharedContentState(OVERLAY_KEY_GOPEED),
@@ -995,49 +959,6 @@ fun MainScreen(
                             Text(text = currentTab.title)
                         },
                         actions = {
-                            // 公告入口：所有 Tab 都显示（收藏只在解析页出现，公告是全局入口），
-                            // 位置在收藏图标左侧 —— 与收藏图标共用"图标当源、长成整页"的容器变换手法。
-                            //
-                            // ★ 角标必须画在 IconButton **外面**（外层再套一个 48dp 的 Box）：
-                            //   material3 的 IconButton 内部带 `.clip(CircleShape)`（那颗 40dp 的圆形
-                            //   水波纹 StateLayer），角标一旦超出这颗圆就被切掉 —— 实测症状是红点被切成
-                            //   水滴形（见用户截图）。外层 Box 与 IconButton 同为 48dp 且不裁剪；
-                            //   Box 仍是同一个 48dp 点击区，而角标自身没有 pointerInput，
-                            //   点在角标上的事件照旧落到 IconButton，不影响点击。
-                            Box(
-                                modifier = Modifier.size(48.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                IconButton(
-                                    onClick = {
-                                        // 从图标进 = 先看列表（清掉上次「查看详情」直接进详情的请求）
-                                        announcementDetailId = null
-                                        showAnnouncements = true
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Campaign,
-                                        contentDescription = if (unreadAnnouncementCount > 0) {
-                                            "公告（$unreadAnnouncementCount 条未读）"
-                                        } else {
-                                            "公告"
-                                        },
-                                        modifier = Modifier.sharedBounds(
-                                            rememberSharedContentState(OVERLAY_KEY_ANNOUNCEMENTS),
-                                            animatedVisibilityScope = sourceScope
-                                        )
-                                    )
-                                }
-                                // 未读红点角标：只有主界面显示（公告页自己开着的时候不显示）
-                                if (unreadAnnouncementCount > 0 && overlayRoute == null) {
-                                    AnnouncementUnreadBadge(
-                                        count = unreadAnnouncementCount,
-                                        modifier = Modifier
-                                            .align(Alignment.TopEnd)
-                                            .offset(x = (-6).dp, y = 2.dp)
-                                    )
-                                }
-                            }
                             // 解析页标题右上角：收藏网盘链接入口
                             if (currentTab == MainTab.Resolve) {
                                 IconButton(
@@ -1173,11 +1094,9 @@ fun MainScreen(
                                     scrollBehavior = scrollBehavior,
                                     themeRowModifier = themeRowModifier,
                                     aboutRowModifier = aboutRowModifier,
-                                    supportRowModifier = supportRowModifier,
                                     engineRowModifier = engineRowModifier,
                                     onThemeClick = { showTheme = true },
                                     onAboutClick = { showAbout = true },
-                                    onSupportClick = { showSupport = true },
                                     onGopeedClick = { showGopeed = true },
                                     backupManager = backupManager,
                                     // 手动检查更新与开发调试预览都复用 MainScreen 的更新弹窗状态
@@ -1287,15 +1206,8 @@ fun MainScreen(
                                     showOnboarding = true
                                 }
                             )
-                            OVERLAY_KEY_SUPPORT -> SupportScreen(onBack = { showSupport = false })
                             OVERLAY_KEY_THEME -> ThemeScreen(onBack = { showTheme = false })
                             OVERLAY_KEY_GOPEED -> DownloadEngineScreen(onBack = { showGopeed = false })
-                            OVERLAY_KEY_ANNOUNCEMENTS -> AnnouncementScreen(
-                                viewModel = announcementViewModel,
-                                onBack = { showAnnouncements = false },
-                                // 启动弹窗点了「查看详情」就直接落在详情页（列表 ↔ 详情的共享元素在页面内部）
-                                initialDetailId = announcementDetailId
-                            )
                             else -> BookmarkScreen(
                                 viewModel = bookmarkViewModel,
                                 onBack = { showBookmarks = false },
@@ -1394,19 +1306,6 @@ fun MainScreen(
                     credentialLostNotice = false
                 }) { Text("知道了") }
             }
-        )
-    }
-
-    // 启动公告弹窗：展示未读的置顶公告（没有则最新未读）。两个出口都算已读，见 AnnouncementViewModel.consumePopup
-    popupAnnouncement?.let { announcement ->
-        AnnouncementPopupDialog(
-            announcement = announcement,
-            onDetail = {
-                announcementDetailId = announcement.id
-                showAnnouncements = true
-                announcementViewModel.consumePopup()
-            },
-            onDismiss = { announcementViewModel.consumePopup() }
         )
     }
 
