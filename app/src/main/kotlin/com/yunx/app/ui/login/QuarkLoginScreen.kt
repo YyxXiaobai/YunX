@@ -71,10 +71,16 @@ import com.yunx.app.ui.components.YunXWavyLoading
 import com.yunx.app.util.DiagnosticLog
 import kotlinx.coroutines.launch
 
+/** 是否已在 pan.quark.cn 域取得有效登录态（__pus + __puus） */
+private fun hasLoggedInPanCookie(): Boolean {
+    val cookie = CookieManager.getInstance().getCookie(QuarkConstants.COOKIE_DOMAIN).orEmpty()
+    return QuarkConstants.isValidCookie(cookie)
+}
+
 /**
  * 夸克网盘登录页：
  * - 顶部标题栏：返回按钮 + 手动输入 Cookie 图标 + 保存按钮（登录完成后点击，提取 Cookie 并校验保存）
- * - 主体：WebView 加载夸克网盘官网，由用户手动登录
+ * - 主体：WebView 加载夸克统一账号（UOP）**手机号验证码登录页**，由用户手动登录（单手机可用）
  * - 自动登录检测：网页内登录完成后自动提取 Cookie 并登录（「保存」按钮保留作手动兜底）
  * - 进入页面时弹登录教程
  */
@@ -122,6 +128,27 @@ fun QuarkLoginScreen(
                 override fun onPageFinished(view: WebView?, url: String?) {
                     DiagnosticLog.webview("page_finished", url)
                     isLoading = false
+                    // 手机号验证码登录完成后的 SSO 回跳：验证码页提交到 uop.quark.cn/cas/，
+                    // 成功后先落在 id.uc.cn / uop.quark.cn（统一账号体系）。此时 uop 域已有登录态，
+                    // 主动导航回 pan.quark.cn 触发 SSO 免密授权，才会种下 __pus/__puus，
+                    // 供自动登录检测保存（见 rememberWebLoginAutoDetect）。
+                    if (isSaving || isSavingManual || showCookieDialog) return
+                    // 仅在「验证码登录成功后的重定向页」（id.uc.cn）触发回跳；
+                    // uop.quark.cn 的登录页本身（cas/custom/login）不触发，避免打断输入。
+                    val u = url.orEmpty()
+                    val onSsoDomain = u.contains("id.uc.cn") || u.contains("uop.quark.cn")
+                    if (onSsoDomain && !hasLoggedInPanCookie() && !u.contains("cas/custom/login")) {
+                        view?.postDelayed({
+                            val current = view?.url.orEmpty()
+                            if ((current.contains("id.uc.cn") || current.contains("uop.quark.cn")) &&
+                                !current.contains("cas/custom/login") &&
+                                !hasLoggedInPanCookie()
+                            ) {
+                                DiagnosticLog.webview("sso_fallback", QuarkConstants.LOGIN_FALLBACK_URL)
+                                view?.loadUrl(QuarkConstants.LOGIN_FALLBACK_URL)
+                            }
+                        }, 1500L)
+                    }
                 }
             }
             webChromeClient = WebChromeClient()
@@ -231,7 +258,7 @@ fun QuarkLoginScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "1. 在下方网页中登录夸克账号",
+                        text = "1. 在下方页面输入手机号，点「获取验证码」并输入短信验证码",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(

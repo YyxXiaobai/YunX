@@ -26,8 +26,17 @@ object QuarkConstants {
     "Chrome/130.0.0.0 Safari/537.36 QuarkPC/6.0.8.649"
 
 
-    /** WebView 登录页（PC 环境） */
-    const val LOGIN_URL = "https://pan.quark.cn/?fr=pc&platform=pc"
+    /** WebView 登录页：夸克统一账号体系（UOP）的**手机号验证码登录**页（PC 展示形态）。
+     *  - custom_login_type=mobile：手机号 + 短信验证码登录（单手机用户可直接完成，无需扫码）
+     *  - client_id=532：夸克网盘客户端
+     *  - display=pc：PC 展示形态，避免手机 UA 被 pan.quark.cn 引导页拦截
+     *  登录提交到 uop.quark.cn/cas/，成功后先跳 id.uc.cn（统一账号体系），
+     *  再由 QuarkLoginScreen 自动导航回 pan.quark.cn 完成 SSO 授权，种下 __pus/__puus。 */
+    const val LOGIN_URL =
+        "https://uop.quark.cn/cas/custom/login?custom_login_type=mobile&client_id=532&display=pc"
+
+    /** 登录完成后回跳 pan.quark.cn 触发 SSO 授权的地址 */
+    const val LOGIN_FALLBACK_URL = "https://pan.quark.cn/?fr=pc&platform=pc"
 
     /** 提取 Cookie 的域名 */
     const val COOKIE_DOMAIN = "https://pan.quark.cn"
