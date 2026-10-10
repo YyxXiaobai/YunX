@@ -347,7 +347,7 @@ class ResolveViewModel(
                     else -> {
                         val credential = currentCredential()
                         if (credential.isNullOrBlank()) {
-                            saveMessage = "夸克登录态失效，请稍后重试（云端自动刷新）"
+                            saveMessage = "云端链接失效，请稍后重试，云端隔一段时间会自动刷新"
                             return@launch
                         }
                         resolveRepository.saveToCloud(s, file, toDirFid, credential)
