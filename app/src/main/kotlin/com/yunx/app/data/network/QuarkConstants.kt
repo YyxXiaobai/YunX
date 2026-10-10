@@ -33,7 +33,7 @@ object QuarkConstants {
      *    是账号级而非应用级，配合 LOGIN_FALLBACK_URL 回跳 pan.quark.cn 触发 SSO 授权
      *    即可种下 __pus/__puus
      *  - display=pc 形态避免手机 UA 被 pan.quark.cn 引导页拦截
-     *  若用户想用手机号验证码登录，见 SMS_LOGIN_URL（QuarkLoginScreen 顶部可切换）。 */
+     *  若用户想用手机号验证码登录，见 SMS_LOGIN_URL。 */
     const val LOGIN_URL =
         "https://uop.quark.cn/cas/login?client_id=4&redirect_uri=http%3A%2F%2Fid.uc.cn%2F"
 
