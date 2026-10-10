@@ -119,6 +119,24 @@ object QuarkConstants {
     /** __puus 有效期约 3 小时，提前到 90 分钟刷新（对齐 AList 100±5 分钟） */
     const val PUUS_REFRESH_INTERVAL_MS = 90L * 60 * 1000
 
+    // ---------- 云端 Cookie 池（Cloudflare Pages + KV，与 PC 版「赛博网盘下载器」同源） ----------
+
+    /** 云端拉取 URL（CLIENT_KEY 只读；返回 Cookie 池 JSON：{"pool":[{ck,name,used,last_used}]}） */
+    const val CLOUD_FETCH_URL =
+        "https://quark-cookie.pages.dev/cookie?key=eLV71OyYPwUf24YGZaCHhXfHAAVINVU8"
+
+    /** 云端上报 URL（用户登录成功后众包入池，供其他用户免登录使用） */
+    const val CLOUD_UPLOAD_URL =
+        "https://quark-cookie.pages.dev/cookie/upload?key=eLV71OyYPwUf24YGZaCHhXfHAAVINVU8"
+
+    /** 云端剔除 URL（发现失效 Cookie 时上报，防止坏 Cookie 传染全池） */
+    const val CLOUD_REPORT_URL =
+        "https://quark-cookie.pages.dev/cookie/report?key=eLV71OyYPwUf24YGZaCHhXfHAAVINVU8"
+
+    /** 云端请求 UA：必须用浏览器 UA，否则被 Cloudflare Bot Fight 拦截（HTTP 1010） */
+    const val CLOUD_UA =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+
     /** 关键 Cookie 字段，缺失则视为未登录 */
     fun isValidCookie(cookie: String?): Boolean =
         cookie != null && cookie.contains("__pus=") && cookie.contains("__puus=")
