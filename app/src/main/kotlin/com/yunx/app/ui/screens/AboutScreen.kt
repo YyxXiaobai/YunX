@@ -80,7 +80,6 @@ import androidx.activity.compose.BackHandler
 import android.content.Intent
 import android.net.Uri
 import com.yunx.app.R
-import com.yunx.app.util.AppLinks
 
 /**
  * 关于云析页：应用介绍、支持平台、功能特性、技术栈与免责声明。
@@ -162,12 +161,9 @@ fun AboutScreen(
             // ---------- 重新预览欢迎界面 ----------
             PreviewOnboardingCard(onClick = onPreviewOnboarding)
 
-            // ---------- 开源仓库 ----------
-            GitHubCard(context)
-
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "云析 v$versionName · Made with ❤ and deepseek",
+                text = "云析 v$versionName",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.outline,
                 modifier = Modifier
@@ -263,15 +259,6 @@ private fun InfoCard(icon: ImageVector, title: String, description: String) {
 private fun PlatformCard() {
     val platforms = listOf(
         "夸克网盘" to Icons.Outlined.Cloud,
-        "UC 网盘" to Icons.Outlined.Storage,
-        "迅雷网盘" to Icons.Outlined.Speed,
-        "百度网盘" to Icons.Outlined.Link,
-        "139 网盘" to Icons.Outlined.Cloud,
-        "123云盘" to Icons.Outlined.Cloud,
-        "115网盘" to Icons.Outlined.Cloud,
-        "光鸭云盘" to Icons.Outlined.Cloud,
-        "蓝奏云优享版" to Icons.Outlined.Cloud,
-        "蓝奏云" to Icons.Outlined.Cloud
     )
     SectionCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -507,63 +494,6 @@ private fun CardIcon(icon: ImageVector) {
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
                 tint = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        }
-    }
-}
-
-/** 开源仓库入口卡片 */
-@Composable
-private fun GitHubCard(context: android.content.Context) {
-    Card(
-        onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(AppLinks.GITHUB_REPO))
-            context.startActivity(intent)
-        },
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                modifier = Modifier.size(40.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Outlined.Code,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(14.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "开源仓库",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = AppLinks.GITHUB_REPO_DISPLAY,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Icon(
-                imageVector = Icons.Outlined.OpenInNew,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.outline
             )
         }
     }
