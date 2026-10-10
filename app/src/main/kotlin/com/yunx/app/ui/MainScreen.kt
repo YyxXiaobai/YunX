@@ -141,7 +141,6 @@ import com.yunx.app.ui.login.ILanzouLoginScreen
 import com.yunx.app.ui.login.LanzouLoginScreen
 import com.yunx.app.ui.login.Pan115LoginScreen
 import com.yunx.app.ui.login.Pan123LoginScreen
-import com.yunx.app.ui.login.QuarkLoginScreen
 import com.yunx.app.ui.login.UCLoginScreen
 import com.yunx.app.ui.login.XunleiLoginScreen
 import com.yunx.app.ui.login.XunleiVerifyWebViewScreen
@@ -209,7 +208,7 @@ internal const val OVERLAY_KEY_GOPEED = "overlay-gopeed"
  * - 顶部可折叠标题（MediumFlexibleTopAppBar，Expressive 柔性顶栏），切换 Tab 时标题文字随 Tab 变化，折叠状态不受影响；
  * - 导航 Tab（解析 / 网盘 / 下载 / 设置）：竖屏为底部导航条（ShortNavigationBar），横屏切换为侧边导航栏（NavigationRail）；
  * - 通过 SaveableStateHolder 保存各页面状态，切换 Tab 再切回来不会重置；
- * - 夸克登录页全屏覆盖展示。
+ * - 夸克账号由云端 cookie 自动注入（无登录页，失效时等待云端刷新）。
  */
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -232,7 +231,6 @@ fun MainScreen(
             onOpenTabConsumed()
         }
     }
-    var showQuarkLogin by rememberSaveable { mutableStateOf(false) }
     var showUCLogin by rememberSaveable { mutableStateOf(false) }
     var showXunleiLogin by rememberSaveable { mutableStateOf(false) }
     var showXunleiWebLogin by rememberSaveable { mutableStateOf(false) }
@@ -736,16 +734,6 @@ fun MainScreen(
         return
     }
 
-    // 夸克登录页：全屏覆盖
-    if (showQuarkLogin) {
-        QuarkLoginScreen(
-            viewModel = viewModel,
-            onBack = { showQuarkLogin = false },
-            onSaved = { showQuarkLogin = false }
-        )
-        return
-    }
-
     // UC 登录页：全屏覆盖
     if (showUCLogin) {
         UCLoginScreen(
@@ -1045,7 +1033,6 @@ fun MainScreen(
                                     ilanzouCloudViewModel = ilanzouCloudViewModel,
                                     lanzouCloudViewModel = lanzouCloudViewModel,
                                     driveQuotaViewModel = driveQuotaViewModel,
-                                    onQuarkLogin = { showQuarkLogin = true },
                                     onQuarkLogout = { viewModel.logout() },
                                     onDownloadStarted = { currentTab = MainTab.Download },
                                     onUCLogin = { showUCLogin = true },
