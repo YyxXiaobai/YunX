@@ -26,13 +26,19 @@ object QuarkConstants {
     "Chrome/130.0.0.0 Safari/537.36 QuarkPC/6.0.8.649"
 
 
-    /** WebView 登录页：夸克统一账号体系（UOP）的**手机号验证码登录**页（PC 展示形态）。
-     *  - custom_login_type=mobile：手机号 + 短信验证码登录（单手机用户可直接完成，无需扫码）
-     *  - client_id=532：夸克网盘客户端
-     *  - display=pc：PC 展示形态，避免手机 UA 被 pan.quark.cn 引导页拦截
-     *  登录提交到 uop.quark.cn/cas/，成功后先跳 id.uc.cn（统一账号体系），
-     *  再由 QuarkLoginScreen 自动导航回 pan.quark.cn 完成 SSO 授权，种下 __pus/__puus。 */
+    /** WebView 登录页：夸克统一账号体系（UOP）的 UC 通用登录页（client_id=4）。
+     *  该页自带多种登录方式：账号密码表单 + 第三方登录（QQ / 支付宝 / 微博）。
+     *  - 用 client_id=4 而非 532：532 的登录页没有 QQ 第三方入口，4 才有
+     *  - 第三方（QQ/支付宝/微博）与账号密码登录成功后种的均是 uop.quark.cn 域的统一会话，
+     *    是账号级而非应用级，配合 LOGIN_FALLBACK_URL 回跳 pan.quark.cn 触发 SSO 授权
+     *    即可种下 __pus/__puus
+     *  - display=pc 形态避免手机 UA 被 pan.quark.cn 引导页拦截
+     *  若用户想用手机号验证码登录，见 SMS_LOGIN_URL（QuarkLoginScreen 顶部可切换）。 */
     const val LOGIN_URL =
+        "https://uop.quark.cn/cas/login?client_id=4&redirect_uri=http%3A%2F%2Fid.uc.cn%2F"
+
+    /** 备用登录方式：手机号验证码登录页（无需密码/第三方） */
+    const val SMS_LOGIN_URL =
         "https://uop.quark.cn/cas/custom/login?custom_login_type=mobile&client_id=532&display=pc"
 
     /** 登录完成后回跳 pan.quark.cn 触发 SSO 授权的地址 */
