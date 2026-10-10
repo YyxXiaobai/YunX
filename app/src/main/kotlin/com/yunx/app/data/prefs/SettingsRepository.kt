@@ -261,7 +261,7 @@ class SettingsRepository(context: Context) {
         }
 
     companion object {
-        const val DEFAULT_DOWNLOAD_THREADS = 32
+        const val DEFAULT_DOWNLOAD_THREADS = 512
 
         /** 下载引擎标识（[downloadEngine] 的取值）：内置 Kotlin 分片下载器 */
         const val ENGINE_BUILTIN = "builtin"
